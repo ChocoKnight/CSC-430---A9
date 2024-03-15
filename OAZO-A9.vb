@@ -134,21 +134,17 @@ Module VBModule
 
     Public Class Environment
         Public bindings As List(Of Bind)
-
+    
         Public Sub New()
-            bindings = New List(Of Bind)()
+            bindings = New List(Of Bind)() ' Initialize the list in the constructor
         End Sub
-
-        Public Sub New(ByVal bindings_new As List(Of Bind))
-            bindings = bindings_new
-        End Sub
-
+    
         Public Sub AddBind(ByVal bind As Bind)
             bindings.Add(bind)
         End Sub
-    End Class 
+    End Class
 
-    Function SetTopEnv(env as Environment)
+    Sub SetTopEnv(env as Environment)
         env.AddBind(New Bind("+", New PrimV("+")))
         env.AddBind(New Bind("-", New PrimV("-")))
         env.AddBind(New Bind("*", New PrimV("*")))
@@ -158,11 +154,66 @@ Module VBModule
         env.AddBind(New Bind("error", New PrimV("error")))
         env.AddBind(New Bind("true", New BoolV(True)))
         env.AddBind(New Bind("false", New BoolV(False)))
+    End Sub
+
+    Function Serialize(val as Value) As String
+        If val.GetType() = GetType(NumV) Then 
+            Return "" & TryCast(val, NumV).num
+        ElseIf val.GetType() = GetType(StrV) Then
+            Return "" & TryCast(val, StrV).str
+        ElseIf val.GetType() = GetType(BoolV) Then
+            If (TryCast(val, BoolV)).bool Then
+                Return "true"
+            Else 
+                Return "false"
+            End IF
+        ElseIf val.GetType() = GetType(CloV) Then
+            Return "#<procedure>"
+        ElseIf val.GetType() = GetType(PrimV) Then
+            Return "#<primop>"
+        End If
     End Function
 
+    Function Interp(ast as ExprC, env as Environment)
+    End Function
+    
     Sub Main()
-        Dim numObj As NumC = New NumC(10)
         Dim topenv As Environment = New Environment()
         SetTopEnv(topenv)
+
+        ' TestSetTopEnv()
+        ' TestSerialize()
     End Sub
+
+    Sub TestSetTopEnv()
+        Dim topenv As Environment = New Environment()
+        SetTopEnv(topenv)
+        
+        Console.WriteLine("Top Env")
+        For Each bind As Bind In topenv.bindings
+            Console.WriteLine("Bind Name: " & bind.name)
+            Console.WriteLine(bind.val)
+        Next
+    End Sub
+
+    Sub TestSerialize() 
+        Dim numval As NumV = New NumV(10)
+        Dim strval As StrV = New StrV("Hello World")
+        Dim trueval As BoolV = New BoolV(True)
+        Dim falseval As BoolV = New BoolV(False)
+        Dim listOfIds As New List(Of String)()
+        listOfIds.Add("x")
+        listOfIds.Add("y")
+        listOfIds.Add("z")
+        Dim cloval As CloV = New CloV(listOfIds, New NumC(10))
+        Dim primval As PrimV = New PrimV("+")
+
+        Console.WriteLine(Serialize(numval))
+        Console.WriteLine(Serialize(strval))
+        Console.WriteLine(Serialize(trueval))
+        Console.WriteLine(Serialize(falseval))
+        Console.WriteLine(Serialize(cloval))
+        Console.WriteLine(Serialize(primval))
+    End Sub
+
 End Module 
